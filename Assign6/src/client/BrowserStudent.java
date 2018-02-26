@@ -104,9 +104,10 @@ public class BrowserStudent extends BrowserGUI
       try{
          if (e.getActionCommand().equals("Show/Refresh")){
             debug("Show/Refresh Page "+urlTF.getText());
-            String urlStr = "http://pooh.poly.asu.edu/Ser321/index.html";
-            urlTF.setText("http://pooh.poly.asu.edu/Ser321/index.html");
-            this.displayURL(new URL("http://pooh.poly.asu.edu/Ser321/index.html"));
+            System.out.println("Here it is: " + urlTF.getText());
+            String urlStr = urlTF.getText();
+            urlTF.setText(urlStr);
+            this.displayURL(new URL(urlStr));
          }else if(e.getActionCommand().equals("Home")){
             debug("Go to home page clicked");
             urlTF.setText("http://pooh.poly.asu.edu/Ser321/Schedule/schedule.html");
