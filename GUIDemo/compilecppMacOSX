@@ -1,0 +1,1 @@
+g++ -I/opt/local/include src/cpp/ClickMeGUI.cpp src/cpp/ClickMe.cpp -L/opt/local/lib -lfltk -lc++ -o bin/clickme
