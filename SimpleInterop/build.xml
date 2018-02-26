@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<project name="Ser321 sockets example. Java Echo server with C# and C++ clients."
+         default="targets" basedir="."
+         xmlns:dn="antlib:org.apache.ant.dotnet"
+         xmlns="antlib:org.apache.tools.ant"
+         xmlns:cpptasks="antlib:net.sf.antcontrib.cpptasks">
+   <taskdef resource="cpptasks.tasks"/>
+   <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+   <property name="hostName" value="localhost"/>
+   <property name="portNum" value="2020"/>
+   <property name="src.dir" value="src"/>
+   <property name="src.cpp.dir" value="src/cpp"/>
+   <property name="dist.dir" value="bin"/>
+   <property name="obj.dir" value="obj"/>
+   <property name="build" value="classes"/>
+   <property name="program" value="EchoClient"/>
+   <property environment="env"/>
+   <property name="user" value="${env.USERNAME}"/>
+
+   <target name="targets">
+      <echo message="Targets are clean, prepare, build.all, build.java, build.cpp, build.cs, execute.server, and targets"/>
+      <echo message="Execute server with ant executeServer -DportNum=2020"/>
+      <echo message="Execute Java client with java -cp classes ser321.sockets.EchoClient localhost 2020"/>
+      <echo message="See readme.txt for starting as service with: ./background start java -jar lib/echoserver.jar 2020"/>
+      <echo message="Execute C# client with mono ./bin/EchoClient.exe localhost 2020"/>
+      <echo message="Execute C++ client with ./bin/cppClient localhost IAmAC++String 2020"/>
+      <echo message="Default value for hostName is: ${hostName}"/>
+      <echo message="Default value for portNum is: ${portNum}"/>
+      <echo message="os is: ${os.name}"/>
+   </target>
+
+   <path id="compile.classpath">
+      <pathelement location="${build}"/>
+   </path>
+
+   <target name="prepare">
+      <mkdir dir="${dist.dir}" />
+      <mkdir dir="${build}" />
+      <mkdir dir="${obj.dir}" />
+      <mkdir dir="lib" />
+      <mkdir dir="log" />
+   </target>
+
+   <target name="clean">
+      <delete dir="${build}" failonerror="false"/>
+      <delete dir="${dist.dir}" failonerror="false"/>
+     <delete dir="${obj.dir}" failonerror="false"/>
+     <delete dir="lib" failonerror="false"/>
+     <delete file="log.txt" failonerror="false"/>
+     <delete file="error.txt" failonerror="false"/>
+     <delete file="pid.txt" failonerror="false"/>
+     <delete dir="log" failonerror="false"/>
+   </target>
+
+   <target name="build.all" depends="build.java, build.cs, build.cpp"/>
+
+   <target name="build.java" depends="prepare">
+     <echo message="Execute Java client with java -cp classes ser321.sockets.EchoClient localhost 2020"/>
+     <javac srcdir="${src.dir}/java"
+             includeantruntime="false"
+             destdir="${build}">
+         <classpath refid="compile.classpath"/>
+      </javac>
+      <jar destfile="lib/echoserver.jar" manifest="manifestServer.txt">
+        <fileset dir="${build}" includes="ser321/sockets/ThreadedEchoServer.class"/>
+      </jar>
+      <jar destfile="lib/echoclient.jar" manifest="manifestClient.txt">
+        <fileset dir="${build}" includes="ser321/sockets/EchoClient.class"/>
+      </jar>
+   </target>
+
+   <target name="build.cs" depends="prepare">
+     <echo message="Execute C# client with mono ./bin/EchoClient.exe localhost 2020"/>
+     <dn:csc targetType="exe" debug="false" executable="mcs"
+             srcDir="${src.dir}/cs"
+             destFile="${dist.dir}/${program}.exe"
+             extraoptions="-pkg:dotnet -lib:/usr/lib/mono/2.0"/>
+   </target>
+
+   <target name="build.cpp" depends="prepare">
+     <echo message="Execute C++ client with ./bin/cppClient localhost IAmAC++String 2020"/>
+     <cc outtype="executable" subsystem="console"
+          outfile="${dist.dir}/cppClient" name="g++"
+          objdir="${obj.dir}">
+          <compilerarg value="-std=c++14"/>
+          <libset dir="/usr/lib" libs="stdc++"/>
+          <fileset dir="${src.cpp.dir}" includes="SocketException.cpp,Socket.cpp,CommunicatingSocket.cpp,TCPSocket.cpp,TCPEchoClient.cpp"/>
+      </cc>
+   </target>
+
+   <target name="execute.server" depends="build.java">
+         <java classname="ser321.sockets.ThreadedEchoServer" fork="yes">
+           <classpath refid="compile.classpath"/>
+           <arg value="${portNum}"/>
+         </java>
+   </target>
+
+</project>
