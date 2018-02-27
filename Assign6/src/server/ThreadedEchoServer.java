@@ -5,6 +5,8 @@ import java.io.*;
 import java.util.*;
 import java.nio.file.*;
 import java.nio.charset.*;
+import java.text.*;
+
 
 /**
  * Copyright 2015 Tim Lindquist,
@@ -41,18 +43,17 @@ import java.nio.charset.*;
  * @version October 2009
  */
 public class ThreadedEchoServer extends Thread {
-  private Socket conn;
-  private int id;
+	private Socket conn;
+	private int id;
 
-  public ThreadedEchoServer (Socket sock, int id) {
+	public ThreadedEchoServer (Socket sock, int id) {
 	 this.conn = sock;
 	 this.id = id;
-  }
+	}
 
 	public void run() {
 		try {
 			OutputStream outSock = conn.getOutputStream();
-			DataOutputStream dos = new DataOutputStream(outSock);
 			InputStream inSock = conn.getInputStream();
 			byte clientInput[] = new byte[1024]; // up to 1024 bytes in a message.
 			int numr = inSock.read(clientInput,0,1024);  // make this read from the fileData byte array
@@ -61,16 +62,36 @@ public class ThreadedEchoServer extends Thread {
 
 			System.out.println("NUMBER from INSTREAM: " + Integer.toString(numr));
 
-			Path fileLocation = Paths.get(fileStr);
+			Path filePath = Paths.get(fileStr);
+			String htmlHeader;
 
-			byte[] fileData = Files.readAllBytes(fileLocation);
+			if (Files.notExists(filePath) || Files.isDirectory(filePath)) {
+				System.out.println("IT DONT EXIST");
+				filePath = Paths.get("./www/Ser321/error.html");
+				htmlHeader = "HTTP/1.0 404 Not Found\nDate: " + getServerTime() + "\nContent-Type: text/html\nContent-Length: ";
+			} else {
+				System.out.println("IT DO EXIST");
+				htmlHeader = "HTTP/1.0 200 OK\nDate: " + getServerTime() + "\nContent-Type: text/html\nContent-Length: ";
+			}
 
-			while (numr != -1) {
+			byte[] fileData = Files.readAllBytes(filePath);
+			int bodyLength = fileData.length;
+
+			htmlHeader += Integer.toString(bodyLength) + "\n\n";
+			
+			byte[] headerBytes = htmlHeader.getBytes();
+			int headerLength = headerBytes.length;
+			
+			// combine header and body byte arrays
+			byte[] fullResponse = new byte[headerLength + bodyLength];
+			System.arraycopy(headerBytes,0,fullResponse,0         ,headerLength);
+			System.arraycopy(fileData,0,fullResponse,headerLength,bodyLength);
+
+			if (numr != -1) {
 				System.out.println("read "+numr+" bytes");
 				System.out.println("read from client: "+id+" the string: "
 										 +clientString);
-				numr = inSock.read(clientInput,0,1024);
-				outSock.write(fileData,0,fileData.length);
+				outSock.write(fullResponse,0,fullResponse.length);
 			}
 			inSock.close();
 			outSock.close();
@@ -79,27 +100,35 @@ public class ThreadedEchoServer extends Thread {
 			System.out.println("Can't get I/O for the connection.");
 		}
 	}
+
+	String getServerTime() {
+		Calendar calendar = Calendar.getInstance();
+		SimpleDateFormat dateFormat = new SimpleDateFormat(
+				"EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return dateFormat.format(calendar.getTime());
+	}
 	 
 	public static void main (String args[]) {
 	 Socket sock;
 	 int id=0;
 	 try {
 		if (args.length != 1) {
-		  System.out.println("Usage: java ser321.sockets.ThreadedEchoServer"+
+			System.out.println("Usage: java ser321.sockets.ThreadedEchoServer"+
 									" [portNum]");
-		  System.exit(0);
+			System.exit(0);
 		}
 		int portNo = Integer.parseInt(args[0]);
 		if (portNo <= 1024) portNo=8888;
 		ServerSocket serv = new ServerSocket(portNo);
 		while (true) {
-		  System.out.println("Echo server waiting for connects on port "
+			System.out.println("Echo server waiting for connects on port "
 									 +portNo);
-		  sock = serv.accept();
-		  System.out.println("Echo server connected to client: "+id);
-		  ThreadedEchoServer myServerThread = new ThreadedEchoServer(sock,id++);
-		  myServerThread.start();
+			sock = serv.accept();
+			System.out.println("Echo server connected to client: "+id);
+			ThreadedEchoServer myServerThread = new ThreadedEchoServer(sock,id++);
+			myServerThread.start();
 		}
 	 } catch(Exception e) {e.printStackTrace();}
-  }
+	}
 }
