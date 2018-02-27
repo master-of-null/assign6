@@ -52,6 +52,7 @@ public class ThreadedEchoServer extends Thread {
 	public void run() {
 		try {
 			OutputStream outSock = conn.getOutputStream();
+			DataOutputStream dos = new DataOutputStream(outSock);
 			InputStream inSock = conn.getInputStream();
 			byte clientInput[] = new byte[1024]; // up to 1024 bytes in a message.
 			int numr = inSock.read(clientInput,0,1024);  // make this read from the fileData byte array
@@ -63,12 +64,11 @@ public class ThreadedEchoServer extends Thread {
 			Path fileLocation = Paths.get(fileStr);
 
 			byte[] fileData = Files.readAllBytes(fileLocation);
-			
+
 			while (numr != -1) {
 				System.out.println("read "+numr+" bytes");
 				System.out.println("read from client: "+id+" the string: "
 										 +clientString);
-				numr = inSock.read(clientInput,0,1024);
 				outSock.write(fileData,0,fileData.length);
 			}
 			inSock.close();
