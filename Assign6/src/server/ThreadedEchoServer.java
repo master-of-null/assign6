@@ -69,6 +69,7 @@ public class ThreadedEchoServer extends Thread {
 				System.out.println("read "+numr+" bytes");
 				System.out.println("read from client: "+id+" the string: "
 										 +clientString);
+				numr = inSock.read(clientInput,0,1024);
 				outSock.write(fileData,0,fileData.length);
 			}
 			inSock.close();
