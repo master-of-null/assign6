@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import java.nio.file.*;
+import java.nio.charset.*;
 
 /**
  * Copyright 2015 Tim Lindquist,
@@ -57,16 +58,18 @@ public class ThreadedEchoServer extends Thread {
 			String clientString = new String(clientInput,0,numr);
 			String fileStr = "." + clientString.split(" ")[1];
 
+			System.out.println("NUMBER from INSTREAM: " + Integer.toString(numr));
+
 			Path fileLocation = Paths.get(fileStr);
+
 			byte[] fileData = Files.readAllBytes(fileLocation);
-			System.out.println(Arrays.toString(fileData));
 			
 			while (numr != -1) {
 				System.out.println("read "+numr+" bytes");
 				System.out.println("read from client: "+id+" the string: "
 										 +clientString);
-				outSock.write(clientInput,0,numr);
 				numr = inSock.read(clientInput,0,1024);
+				outSock.write(fileData,0,fileData.length);
 			}
 			inSock.close();
 			outSock.close();
