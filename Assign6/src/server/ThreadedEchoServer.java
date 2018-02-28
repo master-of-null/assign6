@@ -6,10 +6,13 @@ import java.util.*;
 import java.nio.file.*;
 import java.nio.charset.*;
 import java.text.*;
+import java.awt.image.*;
+import javax.imageio.*;
+import java.nio.*;
 
 
 /**
- * Copyright 2015 Tim Lindquist,
+ * Copyright 2018 Gabriel Martinez,
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +37,8 @@ import java.text.*;
  *
  * Ser321 Foundations of Distributed Software Systems
  * see http://pooh.poly.asu.edu/Ser321
- * @author Tim Lindquist Tim.Lindquist@asu.edu
- *         Software Engineering, CIDSE, IAFSE, ASU Poly
- * @version August 2015
- */
-/**
- * @author Tim Lindquist ASU Polytechnic Department of Engineering
- * @version October 2009
+ * @author Gabriel Martinez gmarti53@asu.edu
+ * @version February 2018
  */
 public class ThreadedEchoServer extends Thread {
 	private Socket conn;
@@ -58,46 +56,57 @@ public class ThreadedEchoServer extends Thread {
 			byte clientInput[] = new byte[1024]; // up to 1024 bytes in a message.
 			int numr = inSock.read(clientInput,0,1024);  // make this read from the fileData byte array
 			String clientString = new String(clientInput,0,numr);
-			String fileStr = "." + clientString.split(" ")[1];
-
-			System.out.println("NUMBER from INSTREAM: " + Integer.toString(numr));
-
-			Path filePath = Paths.get(fileStr);
-			String htmlHeader;
-			
-			if (Files.notExists(filePath) || Files.isDirectory(filePath)) {
-				System.out.println("IT DONT EXIST");
-				filePath = Paths.get("./www/Ser321/error.html");
-				htmlHeader = "HTTP/1.0 404 Not Found\nDate: " + getServerTime() + "\nContent-Type: text/html\nContent-Length: ";
-			} else {
-				System.out.println("IT DO EXIST");
-				htmlHeader = "HTTP/1.0 200 OK\nDate: " + getServerTime() + "\nContent-Type: text/html\nContent-Length: ";
-			}
-
-			byte[] fileData = Files.readAllBytes(filePath);
-			int bodyLength = fileData.length;
-
-			htmlHeader += Integer.toString(bodyLength) + "\n\n";
-			
-			byte[] headerBytes = htmlHeader.getBytes();
-			int headerLength = headerBytes.length;
-			
-			// combine header and body byte arrays
-			byte[] fullResponse = new byte[headerLength + bodyLength];
-			System.arraycopy(headerBytes,0,fullResponse,0         ,headerLength);
-			System.arraycopy(fileData,0,fullResponse,headerLength,bodyLength);
-
-			if (numr != -1) {
-				System.out.println("read "+numr+" bytes");
-				System.out.println("read from client: "+id+" the string: "
-										 +clientString);
-				outSock.write(fullResponse,0,fullResponse.length);
-			}
+			sendFile(clientString, numr, inSock, outSock);
 			inSock.close();
 			outSock.close();
 			conn.close();
 		} catch (IOException e) {
 			System.out.println("Can't get I/O for the connection.");
+		}
+	}
+
+	public void sendFile(String clientString, int numr, 
+														InputStream inSock, OutputStream outSock) throws IOException{
+		String fileStr = "." + clientString.split(" ")[1];
+
+		Path filePath = Paths.get(fileStr);
+		String htmlHeader;
+
+		if (Files.notExists(filePath) || Files.isDirectory(filePath)) {
+			filePath = Paths.get("./www/Ser321/error.html");
+			htmlHeader = "HTTP/1.0 404 Not Found\nDate: " + getServerTime() + "\nContent-Type: text/html\nContent-Length: ";
+		} else if (fileStr.contains(".jpeg")) {
+
+			htmlHeader = "HTTP/1.0 200 OK\nDate: " + getServerTime() + "\nContent-Type: image/jpeg\nContent-Length: ";
+		} else if (fileStr.contains(".png")) {
+
+			htmlHeader = "HTTP/1.0 200 OK\nDate: " + getServerTime() + "\nContent-Type: image/png\nContent-Length: ";
+		}else {
+			htmlHeader = "HTTP/1.0 200 OK\nDate: " + getServerTime() + "\nContent-Type: text/html\nContent-Length: ";
+		}
+
+		byte[] fileData = Files.readAllBytes(filePath);
+		System.out.println(fileData);
+		int bodyLength = fileData.length;
+
+		System.out.println("THIS MANY BYTES: " + Integer.toString(bodyLength));
+
+		htmlHeader += Integer.toString(bodyLength) + "\n\n";
+		
+		byte[] headerBytes = htmlHeader.getBytes();
+		int headerLength = headerBytes.length;
+		
+		// combine header and body byte arrays
+		byte[] fullResponse = new byte[headerLength + bodyLength];
+		System.arraycopy(headerBytes,0,fullResponse,0         ,headerLength);
+		System.arraycopy(fileData,0,fullResponse,headerLength,bodyLength);
+
+
+		if (numr != -1) {
+			System.out.println("read "+numr+" bytes");
+			System.out.println("read from client: "+id+" the string: "
+									 +clientString);
+			outSock.write(fullResponse,0,fullResponse.length);
 		}
 	}
 

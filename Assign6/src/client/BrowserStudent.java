@@ -29,7 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.StringBufferInputStream;
 import java.util.*;
 /**
- * Copyright (c) 2018 Tim Lindquist,
+ * Copyright (c) 2018 Gabriel Martinez,
  * Software Engineering,
  * Arizona State University at the Polytechnic campus
  * <p/>
@@ -56,8 +56,7 @@ import java.util.*;
  * <p/>
  * Ser321 Principles of Distributed Software Systems
  * see http://pooh.poly.asu.edu/Ser321
- * @author Tim Lindquist (Tim.Lindquist@asu.edu) CIDSE - Software Engineering,
- *                       IAFSE, ASU at the Polytechnic campus
+ * @author Gabriel Martinez (gmarti53@asu.edu)
  * @file    BrowserStudent.java
  * @date    February, 2018
  **/

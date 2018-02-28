@@ -13,7 +13,7 @@ import java.awt.event.*;
 import java.io.File;
 
 /**
- * Copyright (c) 2018 Tim Lindquist,
+ * Copyright (c) 2018 Gabriel Martinez,
  * Software Engineering,
  * Arizona State University at the Polytechnic campus
  * <p/>
@@ -37,12 +37,11 @@ import java.io.File;
  * the BrowserStudent class. Browser defines the call-backs for the UI controls.
  * It contains sample control functions that respond to button clicks.
  *
- * This software is meant to run on Debian Wheezy Linux
+ * This software is meant to run on Debian Linux
  * <p/>
  * Ser321 Principles of Distributed Software Systems
  * see http://pooh.poly.asu.edu/Ser321
- * @author Tim Lindquist (Tim.Lindquist@asu.edu) CIDSE - Software Engineering,
- *                       IAFSE, ASU at the Polytechnic campus
+ * @author Gabriel Martinez (gmarti53@asu.edu)
  * @file    BrowserGUI.java
  * @date    February, 2018
  **/

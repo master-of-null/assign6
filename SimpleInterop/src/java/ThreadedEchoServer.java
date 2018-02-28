@@ -53,12 +53,13 @@ public class ThreadedEchoServer extends Thread {
          InputStream inSock = conn.getInputStream();
          byte clientInput[] = new byte[1024]; // up to 1024 bytes in a message.
          int numr = inSock.read(clientInput,0,1024);
+         System.out.println(this.conn.toString());
          while (numr != -1) {
-            //System.out.println("read "+numr+" bytes");
+            System.out.println("read "+numr+" bytes");
             String clientString = new String(clientInput,0,numr);
             System.out.println("read from client: "+id+" the string: "
                                +clientString);
-	    outSock.write(clientInput,0,numr);
+            outSock.write(clientInput,0,numr);
             numr = inSock.read(clientInput,0,1024);
          }
          inSock.close();
