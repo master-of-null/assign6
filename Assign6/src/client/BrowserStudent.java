@@ -27,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.ByteArrayInputStream;
 import java.io.StringBufferInputStream;
+import java.util.*;
 /**
  * Copyright (c) 2018 Tim Lindquist,
  * Software Engineering,
@@ -66,6 +67,8 @@ public class BrowserStudent extends BrowserGUI
    private static final boolean debugOn = true;
 
    private URL helpURL;
+   private Stack<URL> history = new Stack();
+   private URL currentURL;
 
    public BrowserStudent() {
       super(".");
@@ -75,15 +78,21 @@ public class BrowserStudent extends BrowserGUI
       this.addWindowListener(wl);
       displayButt.addActionListener(this);
       homeButt.addActionListener(this);
+      backButt.addActionListener(this);
       initHelp();
       htmlPane.setEditable(false);
       htmlPane.addHyperlinkListener(this);
+      history.push(helpURL);
+      displayURL(currentURL);
    }
 
    public void hyperlinkUpdate(HyperlinkEvent e) {
       if(HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
          debug("activated a hyperlink.");
          // Do something with e.getURL() here
+         this.displayURL(e.getURL());
+         modStack(currentURL);
+         currentURL = e.getURL();
       }else if(HyperlinkEvent.EventType.ENTERED.equals(e.getEventType())) {
          debug("entered a hyperlink.");
          // Do something?
@@ -102,22 +111,51 @@ public class BrowserStudent extends BrowserGUI
     */
    public void actionPerformed(ActionEvent e) {
       try{
+         debug(e.getActionCommand().toString());
          if (e.getActionCommand().equals("Show/Refresh")){
             debug("Show/Refresh Page "+urlTF.getText());
             System.out.println("Here it is: " + urlTF.getText());
             String urlStr = urlTF.getText();
             urlTF.setText(urlStr);
-            this.displayURL(new URL(urlStr));
+            URL url = new URL(urlStr);
+            this.displayURL(url);
+            modStack(currentURL);
+            currentURL = url;
          }else if(e.getActionCommand().equals("Home")){
             debug("Go to home page clicked");
             urlTF.setText("http://pooh.poly.asu.edu/Ser321/Schedule/schedule.html");
             String urlStr = urlTF.getText();
-            this.displayURL(new URL(urlStr));
+            URL url = new URL(urlStr);
+            this.displayURL(url);
+            modStack(currentURL);
+            currentURL = url;
+         }else if(e.getActionCommand().equals("Back")){
+            debug("Go back clicked");
+            // urlTF.setText("http://pooh.poly.asu.edu/Ser321/Schedule/schedule.html");
+            // String urlStr = urlTF.getText();
+            if(!history.empty()) {
+               URL back = history.peek();
+               urlTF.setText(back.toString());
+               back = history.pop();
+               this.displayURL(back);
+               System.out.println(back.toString());
+            } else {
+               debug("Empty");
+            }
          }
       }catch (Exception ex) {
          JOptionPane.showMessageDialog(this, "Exception: "+ex.getMessage());
          ex.printStackTrace();
       }
+   }
+
+   private void modStack(URL url) {
+      if(!history.empty()) {
+         if(url != history.peek()) { history.push(url); }
+      } else {
+         history.push(url);
+      }
+
    }
 
    private void initHelp() {
@@ -129,6 +167,7 @@ public class BrowserStudent extends BrowserGUI
             + "TreeDemoHelp.html";
          debug("Help URL is " + s);
          helpURL = new URL(s);
+         currentURL = helpURL;
          displayURL(helpURL);
       } catch (Exception e) {
          System.err.println("Couldn't create help URL: " + s + " exception: "

@@ -1,4 +1,4 @@
-package ser321.sockets;
+package ser321.server;
 
 import java.net.*;
 import java.io.*;
@@ -64,7 +64,7 @@ public class ThreadedEchoServer extends Thread {
 
 			Path filePath = Paths.get(fileStr);
 			String htmlHeader;
-
+			
 			if (Files.notExists(filePath) || Files.isDirectory(filePath)) {
 				System.out.println("IT DONT EXIST");
 				filePath = Paths.get("./www/Ser321/error.html");
